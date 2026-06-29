@@ -1,523 +1,241 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="manifest" href="/manifest.json" />
-  <title>Kotak Pandora</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kotak Pandora</title>
+    
+    <meta name="theme-color" content="#0f172a">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kotak Pandora">
+    
+    <!-- Manifest & Icon -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0f172a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
 
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome 6 (Gratis) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        /* ===== LOADING OVERLAY ===== */
+        #loading-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.6s ease;
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #1e293b;
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .loading-text {
+            margin-top: 20px;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .loading-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
 
-  <!-- Custom sedikit untuk efek glass yang lebih baik & animasi -->
-  <style>
-    .glass {
-      background: rgba(30, 41, 59, 0.4);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .glass-card {
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-    .animate-float {
-      animation: float 3s ease-in-out infinite;
-    }
-    /* Sembunyikan scrollbar untuk tampilan lebih bersih (opsional) */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Transisi halus untuk tombol */
-    .btn-transition {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .btn-transition:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px -5px rgba(0,0,0,0.5);
-    }
-  </style>
+        /* ===== BANNER INSTALL PWA ===== */
+        #pwa-install-banner {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 420px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #pwa-install-banner.show {
+            bottom: 24px;
+        }
+        .pwa-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .pwa-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .pwa-text h4 {
+            margin: 0 0 2px 0;
+            font-size: 0.95rem;
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        .pwa-text p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+        .pwa-btn {
+            background: #fbbf24;
+            color: #0f172a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .pwa-btn:hover {
+            background: #fcd34d;
+            transform: scale(1.02);
+        }
+        .pwa-close {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .pwa-close:hover {
+            background: #475569;
+            color: #e2e8f0;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex justify-center p-4 md:p-6 font-sans antialiased">
+<body>
 
-  <div class="w-full max-w-7xl">
-
-    <!-- ==================== HEADER ==================== -->
-    <header class="glass rounded-t-2xl px-4 md:px-8 py-4 flex flex-wrap justify-between items-center gap-3 border-b border-white/5">
-      <div class="flex items-center gap-3">
-        <i class="fas fa-box text-3xl text-amber-400"></i>
-        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
-          Kotak Pandora
-        </h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- Tombol Install (muncul via JS) -->
-        <button id="installBtn" onclick="installApp()" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-semibold btn-transition flex items-center gap-2">
-          <i class="fas fa-download"></i> <span class="hidden sm:inline">Install</span>
-        </button>
-        <!-- Tombol Logout -->
-        <button onclick="logout()" class="bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-full text-sm font-medium btn-transition flex items-center gap-2 border border-white/5">
-          <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Keluar</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- ==================== LOGIN SCREEN ==================== -->
-    <div id="loginDiv" class="glass rounded-b-2xl p-6 md:p-12 flex flex-col items-center justify-center min-h-[70vh]">
-      <div class="text-6xl text-amber-400 mb-6 animate-float drop-shadow-[0_0_30px_rgba(251,191,36,0.2)]">
-        <i class="fas fa-lock"></i>
-      </div>
-      <h2 class="text-slate-400 text-xl font-light mb-8">Masukkan Master Password</h2>
-      <div class="w-full max-w-md flex gap-3 bg-slate-800/50 rounded-full p-1.5 pl-6 border border-slate-700/50 focus-within:border-amber-400/50 focus-within:ring-4 focus-within:ring-amber-400/10 transition-all">
-        <input type="password" id="masterPasswordInput" placeholder="Kunci utama Anda..." class="flex-1 bg-transparent border-none outline-none text-slate-100 text-base py-3 placeholder-slate-500" autofocus />
-        <button onclick="handleLogin()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2 rounded-full btn-transition flex items-center gap-2">
-          <i class="fas fa-unlock"></i> Buka
-        </button>
-      </div>
-      <div id="loginError" class="text-red-400 mt-4 min-h-[2rem] text-sm"></div>
-      <p class="mt-6 text-slate-500 text-sm text-center max-w-sm">
-        <i class="fas fa-info-circle text-amber-400/70"></i> Password ini <strong class="text-slate-400">tidak pernah</strong> disimpan di server. Digunakan untuk enkripsi data.
-      </p>
+    <!-- ===== LOADING ===== -->
+    <div id="loading-overlay">
+        <div class="loading-icon">📦</div>
+        <div class="spinner"></div>
+        <div class="loading-text">Membuka Kotak Pandora...</div>
     </div>
 
-    <!-- ==================== DASHBOARD (APP) ==================== -->
-    <div id="appDiv" class="hidden">
+    <!-- ===== IFRAME KE GAS ===== -->
+    <!-- GANTI DENGAN URL GAS ANDA -->
+    <iframe src="https://script.google.com/macros/s/AKfycby.../exec" onload="hideLoading()"></iframe>
 
-      <!-- Toolbar -->
-      <div class="glass px-4 md:px-8 py-4 flex flex-wrap items-center gap-3 border-y border-white/5">
-        <select id="filterKategori" onchange="renderData()" class="bg-slate-800/70 border border-slate-700/50 text-slate-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 flex-1 min-w-[130px]">
-          <option value="all">📋 Semua</option>
-          <option value="🌐 Website">🌐 Website</option>
-          <option value="📧 Email">📧 Email</option>
-          <option value="🖥 VPS">🖥 VPS</option>
-          <option value="☁ Cloud">☁ Cloud</option>
-          <option value="🤖 Bot">🤖 Bot</option>
-          <option value="💳 Bank">💳 Bank</option>
-          <option value="📱 Sosmed">📱 Sosmed</option>
-          <option value="🔐 Password">🔐 Password</option>
-          <option value="🎮 Game">🎮 Game</option>
-          <option value="📦 Marketplace">📦 Marketplace</option>
-          <option value="📄 Dokumen">📄 Dokumen</option>
-          <option value="📡 WiFi">📡 WiFi</option>
-          <option value="🛒 Subscription">🛒 Subscription</option>
-        </select>
-
-        <input type="text" id="searchInput" placeholder="🔍 Cari label..." oninput="renderData()" class="bg-slate-800/70 border border-slate-700/50 text-slate-100 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 flex-[2] min-w-[160px]" />
-
-        <button onclick="openAddModal()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-5 py-2.5 rounded-full btn-transition flex items-center gap-2 text-sm">
-          <i class="fas fa-plus"></i> Tambah
-        </button>
-
-        <span id="countDisplay" class="text-slate-500 text-sm bg-slate-800/40 px-4 py-1.5 rounded-full border border-white/5 whitespace-nowrap">0 item</span>
-      </div>
-
-      <!-- Data Container -->
-      <div class="glass rounded-b-2xl p-4 md:p-6 border-t-0">
-
-        <!-- Tabel (Desktop) -->
-        <div class="overflow-x-auto rounded-xl border border-white/5 bg-slate-900/30 hidden md:block">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-800/40 text-slate-400 font-medium border-b border-white/5">
-              <tr>
-                <th class="px-4 py-3 text-left w-12">#</th>
-                <th class="px-4 py-3 text-left w-36">Kategori</th>
-                <th class="px-4 py-3 text-left">Label &amp; Preview</th>
-                <th class="px-4 py-3 text-left w-40">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-white/5">
-              <tr><td colspan="4" class="px-4 py-12 text-center text-slate-500"><i class="fas fa-inbox text-3xl block mb-3 text-slate-700"></i>Belum ada data</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Grid Kartu (Mobile) -->
-        <div id="cardGrid" class="grid grid-cols-1 gap-4 md:hidden">
-          <div class="text-center text-slate-500 py-12"><i class="fas fa-inbox text-3xl block mb-3 text-slate-700"></i>Belum ada data</div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL ==================== -->
-  <div id="modalOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
-    <div class="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl border border-white/10 animate-[modalIn_0.2s_ease]">
-      <style>
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(10px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      </style>
-      <h3 id="modalTitle" class="text-2xl font-bold text-amber-400 mb-6 flex items-center gap-3">
-        <i class="fas fa-plus-circle"></i> Tambah Data
-      </h3>
-
-      <label class="block text-slate-400 text-sm font-medium mb-1.5">Kategori</label>
-      <select id="modalKategori" class="w-full bg-slate-800/80 border border-slate-700/50 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 mb-4">
-        <option value="🌐 Website">🌐 Website</option>
-        <option value="📧 Email">📧 Email</option>
-        <option value="🖥 VPS">🖥 VPS</option>
-        <option value="☁ Cloud">☁ Cloud</option>
-        <option value="🤖 Bot">🤖 Bot</option>
-        <option value="💳 Bank">💳 Bank</option>
-        <option value="📱 Sosmed">📱 Sosmed</option>
-        <option value="🔐 Password">🔐 Password</option>
-        <option value="🎮 Game">🎮 Game</option>
-        <option value="📦 Marketplace">📦 Marketplace</option>
-        <option value="📄 Dokumen">📄 Dokumen</option>
-        <option value="📡 WiFi">📡 WiFi</option>
-        <option value="🛒 Subscription">🛒 Subscription</option>
-      </select>
-
-      <label class="block text-slate-400 text-sm font-medium mb-1.5">Label (Nama / Deskripsi)</label>
-      <input type="text" id="modalLabel" placeholder="Misal: Gmail Utama" class="w-full bg-slate-800/80 border border-slate-700/50 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 mb-4" />
-
-      <label class="block text-slate-400 text-sm font-medium mb-1.5">Isi Data (Password / Kredensial)</label>
-      <textarea id="modalPlaintext" rows="3" placeholder="Masukkan password atau data rahasia..." class="w-full bg-slate-800/80 border border-slate-700/50 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 resize-none mb-6"></textarea>
-
-      <div class="flex gap-3 justify-end">
-        <button onclick="closeModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-6 py-2.5 rounded-full font-medium btn-transition">Batal</button>
-        <button id="modalSaveBtn" onclick="saveEntry()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-6 py-2.5 rounded-full font-bold btn-transition flex items-center gap-2">
-          <i class="fas fa-save"></i> Simpan
-        </button>
-      </div>
-      <input type="hidden" id="modalEditId" value="" />
-    </div>
-  </div>
-
-  <!-- ==================== TOAST ==================== -->
-  <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-800/90 backdrop-blur-md border border-white/10 text-slate-100 px-6 py-3 rounded-full shadow-2xl font-medium pointer-events-none transition-all duration-300 opacity-0 translate-y-8 z-[999] whitespace-nowrap">
-    <i class="fas fa-check-circle text-emerald-400 mr-2"></i> <span id="toastMessage">Tersalin!</span>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- JAVASCRIPT (Sama seperti sebelumnya, hanya mengadaptasi UI)   -->
-  <!-- ============================================================ -->
-  <script>
-    // ============================================================
-    // KONFIGURASI API
-    // ============================================================
-    const API_BASE = 'https://script.google.com/macros/s/AKfycby8nEAJJ93hreEbgjRyMtjroiAo323wldEm3_8vUiEvgfULg9H6klPMl-E907IgHj0j/exec'; // GANTI DENGAN URL GAS ANDA
-
-    // ============================================================
-    // VARIABEL
-    // ============================================================
-    let masterPassword = '';
-    let allEntries = [];
-    let decryptedMap = {};
-    let timer;
-    let deferredPrompt;
-
-    // ============================================================
-    // PWA INSTALL
-    // ============================================================
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('installBtn').classList.remove('hidden');
-    });
-
-    function installApp() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          document.getElementById('installBtn').classList.add('hidden');
-          deferredPrompt = null;
-        });
-      } else {
-        alert('Untuk install, buka menu browser > "Add to Home Screen" atau "Install App".');
-      }
-    }
-
-    // ============================================================
-    // INISIALISASI
-    // ============================================================
-    window.onload = function() {
-      const saved = sessionStorage.getItem('kotak_master_pass');
-      if (saved) {
-        masterPassword = saved;
-        document.getElementById('masterPasswordInput').value = saved;
-        handleLogin();
-      } else {
-        document.getElementById('loginDiv').style.display = 'flex';
-        document.getElementById('appDiv').style.display = 'none';
-      }
-    };
-
-    // ============================================================
-    // LOGIN / LOGOUT
-    // ============================================================
-    function handleLogin() {
-      const pass = document.getElementById('masterPasswordInput').value.trim();
-      if (!pass) {
-        document.getElementById('loginError').textContent = '❌ Password tidak boleh kosong.';
-        return;
-      }
-      masterPassword = pass;
-      sessionStorage.setItem('kotak_master_pass', pass);
-      document.getElementById('loginError').textContent = '';
-      document.getElementById('loginDiv').style.display = 'none';
-      document.getElementById('appDiv').style.display = 'block';
-      loadData();
-      resetTimer();
-    }
-
-    function logout() {
-      sessionStorage.removeItem('kotak_master_pass');
-      masterPassword = '';
-      document.getElementById('loginDiv').style.display = 'flex';
-      document.getElementById('appDiv').style.display = 'none';
-      document.getElementById('masterPasswordInput').value = '';
-      document.getElementById('masterPasswordInput').focus();
-      if (timer) clearTimeout(timer);
-    }
-
-    function resetTimer() {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        alert('⏰ Sesi berakhir karena tidak aktif.');
-        logout();
-      }, 15 * 60 * 1000);
-    }
-    document.addEventListener('click', resetTimer);
-    document.addEventListener('keydown', resetTimer);
-
-    // ============================================================
-    // ENKRIPSI / DEKRIPSI
-    // ============================================================
-    function strToBuffer(str) { return new TextEncoder().encode(str); }
-    function bufferToBase64(buf) {
-      const bytes = new Uint8Array(buf);
-      let binary = '';
-      for (let i=0; i<bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      return btoa(binary);
-    }
-    function base64ToBuffer(base64) {
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i=0; i<binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      return bytes.buffer;
-    }
-    async function deriveKey(password, salt) {
-      const km = await crypto.subtle.importKey('raw', strToBuffer(password), { name: 'PBKDF2' }, false, ['deriveKey']);
-      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt','decrypt']);
-    }
-    async function encryptPlaintext(plaintext, password) {
-      const salt = crypto.getRandomValues(new Uint8Array(16));
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const key = await deriveKey(password, salt);
-      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, strToBuffer(plaintext));
-      return JSON.stringify({ s: bufferToBase64(salt), i: bufferToBase64(iv), c: bufferToBase64(encrypted) });
-    }
-    async function decryptCiphertext(encryptedJson, password) {
-      try {
-        const { s, i, c } = JSON.parse(encryptedJson);
-        const salt = base64ToBuffer(s);
-        const iv = base64ToBuffer(i);
-        const ciphertext = base64ToBuffer(c);
-        const key = await deriveKey(password, salt);
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
-        return new TextDecoder().decode(decrypted);
-      } catch(e) { return null; }
-    }
-
-    // ============================================================
-    // API CALL
-    // ============================================================
-    async function callApi(action, params = {}) {
-      const url = new URL(API_BASE);
-      url.searchParams.append('action', action);
-      for (let key in params) url.searchParams.append(key, params[key]);
-      const res = await fetch(url.toString(), { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Gagal');
-      return json.data;
-    }
-
-    // ============================================================
-    // LOAD & RENDER
-    // ============================================================
-    async function loadData() {
-      document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="px-4 py-12 text-center text-slate-500"><i class="fas fa-spinner fa-spin text-2xl block mb-3 text-slate-600"></i>Memuat...</td></tr>`;
-      document.getElementById('cardGrid').innerHTML = `<div class="text-center text-slate-500 py-12"><i class="fas fa-spinner fa-spin text-2xl block mb-3 text-slate-600"></i>Memuat...</div>`;
-      try {
-        const entries = await callApi('getAllData');
-        allEntries = entries;
-        decryptedMap = {};
-        let decryptedCount = 0;
-        for (let entry of entries) {
-          const plain = await decryptCiphertext(entry.encryptedData, masterPassword);
-          if (plain !== null) { decryptedMap[entry.id] = plain; decryptedCount++; }
-          else { decryptedMap[entry.id] = '[Dekripsi Gagal]'; }
-        }
-        if (decryptedCount === 0 && entries.length > 0) {
-          alert('⚠️ Master password salah!');
-          logout();
-          return;
-        }
-        renderData();
-      } catch(err) {
-        document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="px-4 py-12 text-center text-red-400"><i class="fas fa-exclamation-triangle text-2xl block mb-3"></i>${err.message}</td></tr>`;
-        document.getElementById('cardGrid').innerHTML = `<div class="text-center text-red-400 py-12"><i class="fas fa-exclamation-triangle text-2xl block mb-3"></i>${err.message}</div>`;
-      }
-    }
-
-    function renderData() {
-      const filter = document.getElementById('filterKategori').value;
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      let filtered = allEntries;
-      if (filter !== 'all') filtered = filtered.filter(e => e.kategori === filter);
-      if (search) filtered = filtered.filter(e => e.label.toLowerCase().includes(search));
-      document.getElementById('countDisplay').textContent = filtered.length + ' item';
-
-      // TABLE
-      const tbody = document.getElementById('tableBody');
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-12 text-center text-slate-500"><i class="fas fa-inbox text-3xl block mb-3 text-slate-700"></i>Tidak ada data</td></tr>`;
-      } else {
-        let html = '';
-        let no = 1;
-        for (let entry of filtered) {
-          const plain = decryptedMap[entry.id] || '[Tidak tersedia]';
-          const preview = plain.length > 30 ? plain.substring(0,30)+'...' : plain;
-          html += `<tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="px-4 py-3">${no++}</td>
-            <td class="px-4 py-3"><span class="bg-amber-400/10 text-amber-400 border border-amber-400/20 px-3 py-1 rounded-full text-xs font-medium">${entry.kategori}</span></td>
-            <td class="px-4 py-3"><span class="font-medium">${entry.label}</span><span class="block text-slate-500 text-xs mt-1">${preview}</span></td>
-            <td class="px-4 py-3">
-              <div class="flex gap-2">
-                <button onclick="copyData('${entry.id}')" class="bg-blue-500/20 hover:bg-blue-500 text-blue-400 hover:text-white px-3 py-1.5 rounded-full text-xs font-medium btn-transition flex items-center gap-1"><i class="fas fa-copy"></i> Copy</button>
-                <button onclick="deleteEntry('${entry.id}')" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-full text-xs font-medium btn-transition flex items-center gap-1"><i class="fas fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>`;
-        }
-        tbody.innerHTML = html;
-      }
-
-      // CARDS (Mobile)
-      const grid = document.getElementById('cardGrid');
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="text-center text-slate-500 py-8 col-span-1"><i class="fas fa-inbox text-3xl block mb-3 text-slate-700"></i>Tidak ada data</div>`;
-      } else {
-        let cards = '';
-        for (let entry of filtered) {
-          const plain = decryptedMap[entry.id] || '[Tidak tersedia]';
-          const preview = plain.length > 50 ? plain.substring(0,50)+'...' : plain;
-          cards += `
-            <div class="glass-card rounded-2xl p-4 border border-white/5 hover:bg-slate-800/40 transition-all">
-              <div class="flex justify-between items-start mb-2">
-                <span class="font-semibold text-slate-200">${entry.label}</span>
-                <span class="bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full text-xs font-medium">${entry.kategori}</span>
-              </div>
-              <p class="text-slate-400 text-sm break-all">${preview}</p>
-              <div class="flex gap-2 mt-4">
-                <button onclick="copyData('${entry.id}')" class="bg-blue-500/20 hover:bg-blue-500 text-blue-400 hover:text-white px-3 py-1.5 rounded-full text-xs font-medium btn-transition flex items-center gap-1"><i class="fas fa-copy"></i> Copy</button>
-                <button onclick="deleteEntry('${entry.id}')" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-full text-xs font-medium btn-transition flex items-center gap-1"><i class="fas fa-trash"></i></button>
-              </div>
+    <!-- ===== BANNER INSTALL PWA ===== -->
+    <div id="pwa-install-banner">
+        <button class="pwa-close" onclick="closeInstallBanner()">✕</button>
+        <div class="pwa-info">
+            <div class="pwa-icon">📦</div>
+            <div class="pwa-text">
+                <h4>Kotak Pandora</h4>
+                <p id="pwa-desc">Install di layar utama untuk akses cepat & aman.</p>
             </div>
-          `;
+        </div>
+        <button id="pwa-install-btn" class="pwa-btn">Install</button>
+    </div>
+
+    <script>
+        // ===== HIDE LOADING =====
+        function hideLoading() {
+            var overlay = document.getElementById('loading-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(function() {
+                overlay.style.display = 'none';
+            }, 500);
         }
-        grid.innerHTML = cards;
-      }
-    }
 
-    // ============================================================
-    // COPY & TOAST
-    // ============================================================
-    function copyData(id) {
-      const text = decryptedMap[id];
-      if (!text || text === '[Dekripsi Gagal]') return alert('Tidak ada data.');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => showToast('✅ Data tersalin!')).catch(() => fallbackCopy(text));
-      } else { fallbackCopy(text); }
-    }
-    function fallbackCopy(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); showToast('✅ Data tersalin!'); } catch(e) { alert('Gagal salin.'); }
-      document.body.removeChild(ta);
-    }
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toastMessage').textContent = msg;
-      toast.classList.remove('opacity-0', 'translate-y-8');
-      toast.classList.add('opacity-100', 'translate-y-0');
-      clearTimeout(window.toastTimer);
-      window.toastTimer = setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'translate-y-8');
-      }, 2500);
-    }
+        // ===== PWA INSTALL LOGIC =====
+        let deferredPrompt;
+        const installBanner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const pwaDesc = document.getElementById('pwa-desc');
 
-    // ============================================================
-    // CRUD
-    // ============================================================
-    function openAddModal() {
-      document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Tambah Data';
-      document.getElementById('modalEditId').value = '';
-      document.getElementById('modalLabel').value = '';
-      document.getElementById('modalPlaintext').value = '';
-      document.getElementById('modalKategori').value = '🌐 Website';
-      document.getElementById('modalOverlay').classList.remove('hidden');
-      document.getElementById('modalOverlay').style.display = 'flex';
-    }
-    function closeModal() {
-      document.getElementById('modalOverlay').style.display = 'none';
-      document.getElementById('modalOverlay').classList.add('hidden');
-    }
-    async function saveEntry() {
-      const id = document.getElementById('modalEditId').value;
-      const kategori = document.getElementById('modalKategori').value;
-      const label = document.getElementById('modalLabel').value.trim();
-      const plaintext = document.getElementById('modalPlaintext').value.trim();
-      if (!label || !plaintext) return alert('Label dan Isi harus diisi.');
-      let encrypted;
-      try { encrypted = await encryptPlaintext(plaintext, masterPassword); } catch(e) { return alert('Gagal enkripsi.'); }
-      try {
-        if (id) {
-          await callApi('updateData', { id, kategori, label, encryptedData: encrypted });
-        } else {
-          await callApi('appendData', { kategori, label, encryptedData: encrypted });
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (!isStandalone) {
+            if (isIOS) {
+                setTimeout(() => {
+                    pwaDesc.innerHTML = 'Ketuk ikon <b>Share</b> lalu <b>Add to Home Screen</b>';
+                    installBtn.style.display = 'none';
+                    installBanner.classList.add('show');
+                }, 2000);
+            } else {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    installBanner.classList.add('show');
+                });
+            }
         }
-        closeModal();
-        loadData();
-        showToast(id ? '✅ Data diperbarui!' : '✅ Data ditambahkan!');
-      } catch(err) {
-        alert('Gagal menyimpan: ' + err.message);
-      }
-    }
-    async function deleteEntry(id) {
-      if (!confirm('Yakin hapus data ini?')) return;
-      try {
-        await callApi('deleteData', { id });
-        loadData();
-        showToast('🗑️ Data dihapus.');
-      } catch(err) {
-        alert('Gagal hapus: ' + err.message);
-      }
-    }
 
-    // Event listeners
-    document.getElementById('modalOverlay').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-    document.getElementById('masterPasswordInput').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') handleLogin();
-    });
-  </script>
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('✅ Aplikasi di-install');
+                }
+                deferredPrompt = null;
+                closeInstallBanner();
+            }
+        });
+
+        function closeInstallBanner() {
+            installBanner.classList.remove('show');
+        }
+
+        window.addEventListener('appinstalled', () => {
+            closeInstallBanner();
+        });
+    </script>
 </body>
 </html>
