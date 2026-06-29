@@ -6,14 +6,15 @@
     <title>Kotak Pandora</title>
     
     <meta name="theme-color" content="#0f172a">
+    
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kotak Pandora">
     
-    <!-- Icon -->
-    <link rel="apple-touch-icon" href="/launchericon-192x192.png">
+    <!-- Manifest & Icon -->
     <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/launchericon-192x192.png">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,7 +22,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #0f172a;
+            background-color: #0f172a;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         
@@ -60,19 +61,14 @@
             font-size: 0.95rem;
         }
         .loading-version {
-            margin-top: 6px;
+            margin-top: 4px;
+            font-size: 0.7rem;
             color: #64748b;
-            font-size: 0.8rem;
             font-family: monospace;
         }
         .loading-icon {
-            font-size: 3.5rem;
-            margin-bottom: 12px;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            font-size: 3rem;
+            margin-bottom: 10px;
         }
 
         /* ===== BANNER INSTALL PWA ===== */
@@ -168,12 +164,12 @@
 </head>
 <body>
 
-    <!-- ===== LOADING SPLASH ===== -->
+    <!-- ===== LOADING ===== -->
     <div id="loading-overlay">
         <div class="loading-icon">📦</div>
         <div class="spinner"></div>
-        <div class="loading-text">Kotak Pandora</div>
-        <div class="loading-version">v1.2.0</div>
+        <div class="loading-text">Membuka Kotak Pandora...</div>
+        <div class="loading-version">v1.0.0</div>
     </div>
 
     <!-- ===== IFRAME KE GAS ===== -->
@@ -248,12 +244,12 @@
             closeInstallBanner();
         });
 
-        // ===== TAMBAHAN: Kirim event ke iframe setelah loading selesai =====
-        // (Opsional, jika ingin komunikasi dua arah)
-        window.addEventListener('load', function() {
-            // Jika perlu, kirim pesan ke iframe
-            // document.querySelector('iframe').contentWindow.postMessage({ type: 'ready' }, '*');
-        });
+        // ===== REGISTER SERVICE WORKER (Opsional) =====
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('✅ Service Worker terdaftar'))
+                .catch((err) => console.log('❌ SW gagal:', err));
+        }
     </script>
 </body>
 </html>
